@@ -22,6 +22,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import utils.ServerUtils;
+
 import javax.swing.JScrollPane;
 import java.awt.Component;
 import javax.swing.ScrollPaneConstants;
@@ -29,9 +32,9 @@ import javax.swing.JTextArea;
 
 public class Client_Compose extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private static final int SERVER_PORT = 1234;
-	private static final String SERVER_ADDRESS = "192.168.1.2";
+	private static final long serialVersionUID = ServerUtils.getSerialversionuid();
+	private static final int SERVER_PORT = ServerUtils.getServerPort();
+	private static final String SERVER_ADDRESS = ServerUtils.getServerAddress();
 	private JPanel contentPane;
 	private JTextField tfEmailReceived;
 	private JTextField tfEmailTitle;
@@ -44,7 +47,7 @@ public class Client_Compose extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Client_Compose frame = new Client_Compose("thaihv.22it@vku.udn.vn");
+					Client_Compose frame = new Client_Compose("");
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -58,7 +61,7 @@ public class Client_Compose extends JFrame {
 	 * @param email 
 	 */
 	public Client_Compose(String email) {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle("Soạn thư");
 		setBounds(100, 100, 380, 580);
 		contentPane = new JPanel();
@@ -76,14 +79,14 @@ public class Client_Compose extends JFrame {
 		lblEmailReceived.setBounds(10, 10, 102, 13);
 		contentPane.add(lblEmailReceived);
 		
-		JButton btnLogin = new JButton("GỬI");
-		btnLogin.addActionListener(new ActionListener() {
+		JButton btnSend = new JButton("GỬI");
+		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sendMessage(email);
 			}
 		});
-		btnLogin.setBounds(213, 512, 143, 21);
-		contentPane.add(btnLogin);
+		btnSend.setBounds(213, 512, 143, 21);
+		contentPane.add(btnSend);
 		
 		JLabel lblEmailTitle = new JLabel("Tiêu đề");
 		lblEmailTitle.setBounds(10, 68, 102, 13);

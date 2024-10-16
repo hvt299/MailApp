@@ -5,11 +5,15 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 
 import javax.swing.DefaultListModel;
@@ -27,20 +31,25 @@ import javax.swing.JList;
 import java.awt.Component;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionListener;
+
+import server.Server;
+import utils.ServerUtils;
+
 import javax.swing.event.ListSelectionEvent;
 
 public class Client_Home extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private static final int SERVER_PORT = 1234;
-	private static final String SERVER_ADDRESS = "192.168.1.2";
-    private static final String SERVER_DIR = "MailServer";
+	private static final long serialVersionUID = ServerUtils.getSerialversionuid();
+	private static final int SERVER_PORT = ServerUtils.getServerPort();
+	private static final String SERVER_ADDRESS = ServerUtils.getServerAddress();
+    private static final String SERVER_DIR = ServerUtils.getServerDir();
 	private JPanel contentPane;
 	private JTextArea taInfo;
 	private JLabel lblEmailTitle;
 	private JLabel lblTime;
 	private JLabel lblFrom;
 	private JLabel lblTo;
+	private DefaultListModel<String> listModel = new DefaultListModel<>();
 
 	/**
 	 * Launch the application.
@@ -49,7 +58,7 @@ public class Client_Home extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Client_Home frame = new Client_Home("thaihv.22it@vku.udn.vn", "new_email.txt\npassword.txt");
+					Client_Home frame = new Client_Home("");
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -63,10 +72,10 @@ public class Client_Home extends JFrame {
 	 * @param requestParts 
 	 * @param email 
 	 */
-	public Client_Home(String email, String fileNames) {
-		String[] requestParts = fileNames.split("\n");
+	public Client_Home(String email) {
+//		String[] requestParts = fileNames.split("\n");
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle("Bạn đang đăng nhập với tài khoản email: " + email);
 		setBounds(100, 100, 850, 500);
 		contentPane = new JPanel();
@@ -75,12 +84,12 @@ public class Client_Home extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JButton btnStart = new JButton("Thư mới");
-		btnStart.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStart.setBounds(10, 10, 170, 40);
-		contentPane.add(btnStart);
+		JButton btnCompose = new JButton("Thư mới");
+		btnCompose.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnCompose.setBounds(10, 10, 170, 40);
+		contentPane.add(btnCompose);
 		
-		btnStart.addActionListener(new ActionListener() {
+		btnCompose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Client_Compose main = new Client_Compose(email);
 	            main.setLocationRelativeTo(null);
@@ -88,40 +97,40 @@ public class Client_Home extends JFrame {
 			}
 		});
 		
-		DefaultListModel<String> listModel = new DefaultListModel<>();
-		for (String part : requestParts) {
-		    listModel.addElement(part);
-		}
+		listModel = new DefaultListModel<>();
+		startEmailCheckThread(email);
+//		for (String part : requestParts) {
+//		    listModel.addElement(part);
+//		}
 		JList<String> list = new JList<>(listModel);
-		list.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-		            JList<?> source = (JList<?>) e.getSource();
-		            String selected = source.getSelectedValue().toString();
-		            
-		            File accountDir = new File(SERVER_DIR + "/" + email);
-		            File selectedFile = new File(accountDir, selected);
-	            	try {
-	    	        	BufferedReader reader = new BufferedReader(new FileReader(selectedFile));
-	    	        	StringBuilder content = new StringBuilder();
-	    	        	String line;
-	    	        	int count = 0;
-	    	        	while ((line = reader.readLine()) != null) {
-	    	        		if (count == 0) lblEmailTitle.setText(line);
-	    	        		else if (count == 1) lblTime.setText(line);
-	    	        		else if (count == 2) lblFrom.setText(line);
-	    	        		else if (count == 3) lblTo.setText(line);
-	    	        		else content.append(line).append("\n");
-	    	        		count++;
-	    	        	}
-	    	        	reader.close();
-	    	        	
-	    	        	logMessage(content.toString());
-	            	} catch (IOException e1) {}
-		        }
-			}
-		});
-		
+//		list.addListSelectionListener(new ListSelectionListener() {
+//			public void valueChanged(ListSelectionEvent e) {
+//				if (!e.getValueIsAdjusting()) {
+//		            JList<?> source = (JList<?>) e.getSource();
+//		            String selected = source.getSelectedValue().toString();
+//		            
+//		            File accountDir = new File(SERVER_DIR + "/" + email);
+//		            File selectedFile = new File(accountDir, selected);
+//	            	try {
+//	    	        	BufferedReader reader = new BufferedReader(new FileReader(selectedFile));
+//	    	        	StringBuilder content = new StringBuilder();
+//	    	        	String line;
+//	    	        	int count = 0;
+//	    	        	while ((line = reader.readLine()) != null) {
+//	    	        		if (count == 0) lblEmailTitle.setText(line);
+//	    	        		else if (count == 1) lblTime.setText(line);
+//	    	        		else if (count == 2) lblFrom.setText(line);
+//	    	        		else if (count == 3) lblTo.setText(line);
+//	    	        		else content.append(line).append("\n");
+//	    	        		count++;
+//	    	        	}
+//	    	        	reader.close();
+//	    	        	
+//	    	        	logMessage(content.toString());
+//	            	} catch (IOException e1) {}
+//		        }
+//			}
+//		});
 		
 		JScrollPane scrollPane = new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		scrollPane.setBounds(10, 60, 170, 393);
@@ -171,7 +180,71 @@ public class Client_Home extends JFrame {
 		lblTo.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		lblTo.setBounds(190, 137, 636, 15);
 		contentPane.add(lblTo);
+		
+		this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+	            try {	
+	            	DatagramSocket clientSocket = new DatagramSocket();
+				    InetAddress serverIP = InetAddress.getByName(SERVER_ADDRESS);
+	                sendRequest("LOGOUT " + email, serverIP, SERVER_PORT, clientSocket);
+	                System.exit(0);
+	            } catch (Exception e2) {
+	                e2.printStackTrace();
+	            }
+            }
+        });
 	}
+	
+	private void updateMailList(String mail) {
+        try {
+            DatagramSocket clientSocket = new DatagramSocket();
+		    InetAddress serverIP = InetAddress.getByName(SERVER_ADDRESS);
+            sendRequest("GET_MAILS " + mail, serverIP, SERVER_PORT, clientSocket);
+
+            // Nhận phản hồi từ server
+            byte[] receiveData = new byte[1024];
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            clientSocket.receive(receivePacket);
+            String serverResponse = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            
+            String[] requestParts = serverResponse.split(" ", 2);
+            String command = requestParts[0];
+            
+            switch (command) {
+            	case "SUCCESS":
+            		String[] mailList = requestParts[1].split("\n");
+            		listModel.clear();
+            		for (String item : mailList) {
+            		    listModel.addElement(item);
+            		}
+            		break;
+            	case "ERROR":
+            		break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+	
+	private void startEmailCheckThread(String mail) {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    updateMailList(mail); // Cập nhật danh sách email sau mỗi khoảng thời gian
+                    Thread.sleep(5000); // Cập nhật mỗi 5 giây
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+	
+	private static void sendRequest(String request, InetAddress serverIP, int serverPort, DatagramSocket clientSocket) throws Exception {
+        byte[] sendData = request.getBytes();
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverIP, serverPort);
+        clientSocket.send(sendPacket);
+    }
 	
 	// Hàm để log thông tin vào JTextArea
 	private void logMessage(String message) {

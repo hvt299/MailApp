@@ -15,9 +15,11 @@ import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import utils.ServerUtils;
+
 public class Server {
-	private static final int SERVER_PORT = 1234;
-    private static final String SERVER_DIR = "MailServer";
+	private static final int SERVER_PORT = ServerUtils.getServerPort();
+	private static final String SERVER_DIR = ServerUtils.getServerDir();
     
     public static void main(String[] args) throws IOException {
 		DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT);

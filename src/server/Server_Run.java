@@ -30,12 +30,14 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import utils.ServerUtils;
+
 public class Server_Run extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private static final int SERVER_PORT = 1234;
-	private static final String SERVER_ADDRESS = "192.168.1.2";
-    private static final String SERVER_DIR = "MailServer";
+	private static final long serialVersionUID = ServerUtils.getSerialversionuid();
+	private static final int SERVER_PORT = ServerUtils.getServerPort();
+	private static final String SERVER_ADDRESS = ServerUtils.getServerAddress();
+	private static final String SERVER_DIR = ServerUtils.getServerDir();
 	private JPanel contentPane;
 	private JTextField tfPort;
 	private JTextArea taInfo;
@@ -102,6 +104,13 @@ public class Server_Run extends JFrame {
 			            case "LOGIN":
 			                login(requestParts[1], requestParts[2], clientIP, clientPort, serverSocket);
 			                break;
+			            case "GET_MAILS":
+			            	getMailList(requestParts[1], clientIP, clientPort, serverSocket);
+			            	break;
+			            case "LOGOUT":
+			            	requestParts = clientRequest.split(" ", 2);
+			            	logMessage(requestParts[1] + " đã thoát");
+			            	break;
 			            default:
 			                logMessage("Không tìm thấy lệnh: " + command);
 		            }
@@ -122,23 +131,23 @@ public class Server_Run extends JFrame {
             // Tạo file new_email.txt
             File newEmailFile = new File(accountDir, "new_email.txt");
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(newEmailFile));
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            LocalDateTime now = LocalDateTime.now();
-            String formattedDate = now.format(formatter);
-            writer1.write("Welcome to Mail!\n");
-            writer1.write(formattedDate + "\n");
-            writer1.write("admin@gmail.com\n");
-            writer1.write(accountName + "\n");
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+//            LocalDateTime now = LocalDateTime.now();
+//            String formattedDate = now.format(formatter);
+//            writer1.write("Welcome to Mail!\n");
+//            writer1.write(formattedDate + "\n");
+//            writer1.write("admin@gmail.com\n");
+//            writer1.write(accountName + "\n");
             writer1.write("Thank you for using this service. We hope that you will feel comfortable.");
             writer1.close();
             
             // Tạo file password.txt
             File passwordFile = new File(accountDir, "password.txt");
             BufferedWriter writer2 = new BufferedWriter(new FileWriter(passwordFile));
-            writer2.write("This is your password!\n");
-            writer2.write(formattedDate + "\n");
-            writer2.write("admin@gmail.com\n");
-            writer2.write(accountName + "\n");
+//            writer2.write("This is your password!\n");
+//            writer2.write(formattedDate + "\n");
+//            writer2.write("admin@gmail.com\n");
+//            writer2.write(accountName + "\n");
             writer2.write(password);
             writer2.close();
 
@@ -151,27 +160,27 @@ public class Server_Run extends JFrame {
 	
 	private void sendMessage(String emailTitle, String formattedDate, String email, String emailReceived, String content, InetAddress clientIP, int clientPort, DatagramSocket serverSocket) throws IOException {
 		File accountDir1 = new File(SERVER_DIR + "/" + emailReceived);
-		File accountDir2 = new File(SERVER_DIR + "/" + email);
-        if (accountDir1.exists() && accountDir2.exists()) {
+//		File accountDir2 = new File(SERVER_DIR + "/" + email);
+        if (accountDir1.exists()) {
             // Tạo file email_currentTime.txt
         	Long currentTime = System.currentTimeMillis();
             File newEmailFile = new File(accountDir1, "email_" + currentTime + ".txt");
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(newEmailFile));
-            writer1.write(emailTitle + "\n");
-            writer1.write(formattedDate + "\n");
-            writer1.write(email + "\n");
-            writer1.write(emailReceived + "\n");
+//            writer1.write(emailTitle + "\n");
+//            writer1.write(formattedDate + "\n");
+//            writer1.write(email + "\n");
+//            writer1.write(emailReceived + "\n");
             writer1.write(content);
             writer1.close();
 
-            newEmailFile = new File(accountDir2, "email_" + currentTime + ".txt");
-            BufferedWriter writer2 = new BufferedWriter(new FileWriter(newEmailFile));
-            writer2.write(emailTitle + "\n");
-            writer2.write(formattedDate + "\n");
-            writer2.write(email + "\n");
-            writer2.write(emailReceived + "\n");
-            writer2.write(content);
-            writer2.close();
+//            newEmailFile = new File(accountDir2, "email_" + currentTime + ".txt");
+//            BufferedWriter writer2 = new BufferedWriter(new FileWriter(newEmailFile));
+//            writer2.write(emailTitle + "\n");
+//            writer2.write(formattedDate + "\n");
+//            writer2.write(email + "\n");
+//            writer2.write(emailReceived + "\n");
+//            writer2.write(content);
+//            writer2.close();
             
             String response = "SUCCESS Thư đã được gửi thành công từ " + email + " đến " + emailReceived + ".";
             sendResponse(response, clientIP, clientPort, serverSocket);
@@ -188,25 +197,39 @@ public class Server_Run extends JFrame {
 	        	BufferedReader reader = new BufferedReader(new FileReader(passwordFile));
 	        	String pass = "";
 	        	String line;
-	        	int count = 0;
+//	        	int count = 0;
 	        	while ((line = reader.readLine()) != null) {
-	        		if (count >= 4) pass = line;
-	        		count++;
+	        		pass = line;
+//	        		if (count >= 4) pass = line;
+//	        		count++;
 	        	}
 	        	reader.close();
 			    
 	        	if (pass.equals(password)) {
-	        		 StringBuilder fileNames = new StringBuilder();
-	                 for (File file : accountDir.listFiles()) {
-	                     fileNames.append(file.getName()).append("\n");
-	                 }
+//	        		 StringBuilder fileNames = new StringBuilder();
+//	                 for (File file : accountDir.listFiles()) {
+//	                     fileNames.append(file.getName()).append("\n");
+//	                 }
 	                 logMessage(accountName + " đã kết nối");
-	                 sendResponse("SUCCESS " + fileNames.toString(), clientIP, clientPort, serverSocket);
+	                 sendResponse("SUCCESS ", clientIP, clientPort, serverSocket);
 	        	} else {
 	                sendResponse("ERROR Sai mật khẩu.", clientIP, clientPort, serverSocket);
 	        	}
         	} catch (Exception e) {}
         } else {
+            sendResponse("ERROR Tài khoản không tồn tại.", clientIP, clientPort, serverSocket);
+        }
+    }
+    
+    private void getMailList(String accountName, InetAddress clientIP, int clientPort, DatagramSocket serverSocket) throws IOException {
+    	File accountDir = new File(SERVER_DIR + "/" + accountName);
+    	if (accountDir.exists()) {
+    		StringBuilder fileNames = new StringBuilder();
+            for (File file : accountDir.listFiles()) {
+                fileNames.append(file.getName()).append("\n");
+            }
+            sendResponse("SUCCESS " + fileNames.toString(), clientIP, clientPort, serverSocket);
+    	} else {
             sendResponse("ERROR Tài khoản không tồn tại.", clientIP, clientPort, serverSocket);
         }
     }

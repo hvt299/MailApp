@@ -20,11 +20,13 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import utils.ServerUtils;
+
 public class Client_SignUp extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private static final int SERVER_PORT = 1234;
-	private static final String SERVER_ADDRESS = "192.168.1.2";
+	private static final long serialVersionUID = ServerUtils.getSerialversionuid();
+	private static final int SERVER_PORT = ServerUtils.getServerPort();
+	private static final String SERVER_ADDRESS = ServerUtils.getServerAddress();
 	private JPanel contentPane;
 	private JTextField tfEmail;
 	private JTextField tfPassword;
@@ -131,17 +133,18 @@ public class Client_SignUp extends JFrame {
 					    String email = tfEmail.getText();
 					    String password = tfPassword.getText();
 					    
-					    MessageDigest md = MessageDigest.getInstance("MD5");  
-					    byte[] result = md.digest(password.getBytes());
-					    StringBuilder hexString = new StringBuilder();
-			            for (byte b : result) {
-			                String hex = Integer.toHexString(0xff & b);
-			                if (hex.length() == 1) {
-			                    hexString.append('0');
-			                }
-			                hexString.append(hex);
-			            }
-					    sendRequest("CREATE_ACCOUNT " + email + " " + hexString.toString(), serverIP, SERVER_PORT, clientSocket);
+					    // Mã hóa password (MD5) => kết quả thu được hexString
+//					    MessageDigest md = MessageDigest.getInstance("MD5");  
+//					    byte[] result = md.digest(password.getBytes());
+//					    StringBuilder hexString = new StringBuilder();
+//			            for (byte b : result) {
+//			                String hex = Integer.toHexString(0xff & b);
+//			                if (hex.length() == 1) {
+//			                    hexString.append('0');
+//			                }
+//			                hexString.append(hex);
+//			            }
+					    sendRequest("CREATE_ACCOUNT " + email + " " + password, serverIP, SERVER_PORT, clientSocket);
 					    
 					    // Nhận phản hồi từ server
 					    byte[] receiveData = new byte[1024];
